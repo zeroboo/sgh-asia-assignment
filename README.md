@@ -82,29 +82,4 @@ CREATE INDEX idx_transactions_user_id_created_at
 
 ## Part 3: Code Review Exercise
 
-Given a poorly structured Go code and suggest way to refactor and improve the code. 
-
-```golang
-package main
-
-import (
-    "fmt"
-    "net/http"
-    "io/ioutil"
-)
-
-var result string
-
-func handler(w http.ResponseWriter, r *http.Request) {
-    body, _ := ioutil.ReadAll(r.Body) 
-    result = string(body)             
-    fmt.Fprintf(w, "Saved: %s", result)
-    defer r.Body.Close()              
-}
-
-func main() {
-    http.HandleFunc("/", handler)
-    http.ListenAndServe(":8080", nil)
-}
-```
-
+[Answer](./PART_3.md)
