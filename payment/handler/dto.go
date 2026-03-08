@@ -1,24 +1,24 @@
 package handler
 
-// PayRequestDTO pay request content.
-type PayRequestDTO struct {
-	TransactionID string  `json:"transactionID" binding:"required"`
-	UserID        string  `json:"userID" binding:"required"`
-	Amount        float64 `json:"amount" binding:"required"`
-	Currency      string  `json:"currency,omitempty"`
-	Description   string  `json:"description,omitempty"`
+// PayRequest pay request content.
+type PayRequest struct {
+	TransactionID string `json:"transactionID" binding:"required"`
+	UserID        string `json:"userID" binding:"required"`
+	Amount        int64  `json:"amount" binding:"required"`
+	Currency      string `json:"currency,omitempty"`
+	Description   string `json:"description,omitempty"`
 }
 
-// PayResponseDTO response for payrequest
-type PayResponseDTO struct {
-	Status        string  `json:"status"`
-	TransactionID string  `json:"transactionID"`
-	UserID        string  `json:"userID"`
-	Amount        float64 `json:"amount"`
-	Currency      string  `json:"currency"`
-	NewBalance    float64 `json:"newBalance"`
-	Message       string  `json:"message,omitempty"`
-	ProcessedAt   string  `json:"processedAt"`
+// PayResponse response for payrequest
+type PayResponse struct {
+	Status        string `json:"status"`
+	TransactionID string `json:"transactionID"`
+	UserID        string `json:"userID"`
+	Amount        int64  `json:"amount"`
+	Currency      string `json:"currency"`
+	NewBalance    int64  `json:"newBalance"`
+	Message       string `json:"message,omitempty"`
+	ProcessedAt   string `json:"processedAt"`
 }
 
 // ErrorDTO is a standard error response.
