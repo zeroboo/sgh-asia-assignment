@@ -31,5 +31,14 @@ CREATE TABLE events (
     PRIMARY KEY (id),
     INDEX idx_transaction_id (transaction_id),
     INDEX idx_type (type),
-    INDEX idx_created_at (created_at),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE transaction_locks (
+    transaction_id  VARCHAR(64)   NOT NULL,
+    created_at      DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    deleted_at      DATETIME(3)   NULL,
+
+    PRIMARY KEY (transaction_id),
+    CONSTRAINT fk_lock_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
