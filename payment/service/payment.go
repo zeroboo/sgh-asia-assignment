@@ -36,6 +36,12 @@ func (s *PaymentService) GetPayment(transactionID string) (*model.Transaction, e
 	return s.transactionRepo.GetByID(ctx, transactionID)
 }
 
+// GetUserBalance retrieves the current wallet balance for a user.
+func (s *PaymentService) GetUserBalance(userID string) (*model.UserBalance, error) {
+	ctx := context.Background()
+	return s.userBalanceRepo.GetByUserID(ctx, userID)
+}
+
 // LockPayment creates an advisory lock row to prevent duplicate processing.
 func (s *PaymentService) LockPayment(transactionID string) error {
 	ctx := context.Background()

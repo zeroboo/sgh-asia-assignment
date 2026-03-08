@@ -7,36 +7,20 @@ import (
 	"zeroboo.payment/model"
 )
 
-type ITransactionRepository interface {
-	GetTransaction(transactionId string) (*model.Transaction, error)
-}
-
-type IEventLogRepository interface {
+type IPaymentService interface {
+	GetUserBalance(userId string) (*model.UserBalance, error)
+	GetPayment(transactionId string) (*model.Transaction, error)
+	LockPayment(transactionId string) error
+	UnlockPayment(transactionId string) error
+	CreatePayment(userId string, transactionId string, amount int64) error
 }
 
 type PaymentHandler struct {
-	transactionRepo ITransactionRepository
-	eventLogRepo    IEventLogRepository
+	paymentService IPaymentService
 }
 
 func (handler *PaymentHandler) RegisterRoutes(r gin.IRouter) {
 	r.POST("/pay", handler.handlePay)
-}
-
-func IsTransactionProcessing(transactionId string) bool {
-	return false
-}
-
-// Accquired lock on a transaction id.
-// returns nil if locking success, any error if locking failed
-func LockTransaction(transactionId string) error {
-	return nil
-}
-
-// Release lock on transaction id
-// returns nil if unlocking success, any error if fail
-func UnlockTransaction(transactionId string) error {
-	return nil
 }
 
 func (h *PaymentHandler) handlePay(c *gin.Context) {
@@ -52,30 +36,37 @@ func (h *PaymentHandler) handlePay(c *gin.Context) {
 	}
 
 	//Is transation existed?
-	transaction, errLoad := h.transactionRepo.GetTransaction(req.TransactionID)
+	transaction, errLoad := h.paymentService.GetPayment(req.TransactionID)
 	if errLoad != nil {
 		//Response 500
 	}
+
 	if transaction != nil {
 		//Response current transaction status
 		//
 	}
 
-	// Create new transaction
-	errLock := LockTransaction(req.TransactionID)
+	// Create a lock on transaction
+	errLock := h.paymentService.LockPayment(req.TransactionID)
+	defer h.paymentService.UnlockPayment(req.TransactionID)
 	if errLock != nil {
 		//Response 500
 	}
 
+	// Validate user has enough money
+	userBalance, errBalance := h.paymentService.GetUserBalance(req.UserID)
+	if errBalance != nil {
+		//Response 500
+	}
+	if userBalance.Balance < req.Amount {
+		//Response 400
+	}
+
 	// Create new transaction
-
-	// Write transaction
-
-	// Write event log
-
-	errUnlock := UnlockTransaction(req.TransactionID)
-	if errUnlock != nil {
-		//Log
+	errPay := h.paymentService.CreatePayment(req.UserID, req.TransactionID, req.Amount)
+	if errPay != nil {
+		//Unlock payment
+		//Response 500
 	}
 
 	// Response
