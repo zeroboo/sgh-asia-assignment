@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"zeroboo.payment/handler"
 )
 
 func main() {
 
 	// Init gin router
 	r := gin.New()
-
+	h := handler.PaymentHandler{}
+	h.RegisterRoutes(r)
 	// Setup server
 	addr := ":8080"
 	httpServer := &http.Server{
