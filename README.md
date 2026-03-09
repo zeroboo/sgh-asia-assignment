@@ -1,5 +1,5 @@
 # sgh-asia-assignment
-Submission for [assignment from SGH Asia](https://better-airport-510.notion.site/Advanced-Test-263f007ae57480a8b051c87b500b0e04)
+Submission for [Advanced Test](https://better-airport-510.notion.site/Advanced-Test-263f007ae57480a8b051c87b500b0e04) from SGH Asia.
 
 
 ## Part 1: Golang
