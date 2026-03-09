@@ -1,6 +1,6 @@
 
 ## Overview
-Project demonstrate a REST API server. Implemented using [Gin Web Framework](https://gin-gonic.com/en/) to handle HTTP requests and MySQL for storage.
+Project demonstrates a REST API server. It is implemented using [Gin Web Framework](https://gin-gonic.com/en/) to handle HTTP requests and MySQL for storage.
 
 ### 1. APIs:
   - POST /pay: Process the payment.

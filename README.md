@@ -2,7 +2,17 @@
 Submission for [assignment from SGH Asia](https://better-airport-510.notion.site/Advanced-Test-263f007ae57480a8b051c87b500b0e04)
 
 
-## Part 1
+## Part 1: Golang
+### 1. Payment Service
+
+Implementation is in folder `payment`  
+[README](./payment/README.md)
+
+### 2. Concurrency – Worker Pool
+
+Implementation is in folder `worker-pool`  
+[README](./worker-pool/README.md)
+
 ### 3. Code Review – Bad Go Code
 
 You are given the following code:
@@ -54,8 +64,8 @@ fmt.Fprintf(w, "Saved: %d bytes", len(data))
 ```
 ## Part 2: SQL
 
-[Read more](./PART_2.md)
+[Solution](./PART_2.md)
 
 ## Part 3: Code Review Exercise
 
-[Read more](./PART_3.md)
+[Solution](./PART_3.md)
