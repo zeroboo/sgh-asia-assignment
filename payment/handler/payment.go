@@ -100,6 +100,7 @@ func (h *PaymentHandler) handlePay(c *gin.Context) {
 		c.JSON(http.StatusOK, &BaseResponse{
 			Status: http.StatusInternalServerError,
 		})
+		return
 	}
 
 	//User balance not found
@@ -109,6 +110,7 @@ func (h *PaymentHandler) handlePay(c *gin.Context) {
 			Status:       http.StatusBadRequest,
 			ErrorMessage: "user not exists",
 		})
+		return
 	}
 
 	if userBalance.Balance < req.Amount {
@@ -118,6 +120,7 @@ func (h *PaymentHandler) handlePay(c *gin.Context) {
 			Status:       http.StatusBadRequest,
 			ErrorMessage: "insufficient balance",
 		})
+		return
 	}
 
 	// Create new transaction
@@ -129,6 +132,7 @@ func (h *PaymentHandler) handlePay(c *gin.Context) {
 			Status:       http.StatusInternalServerError,
 			ErrorMessage: "payment failed",
 		})
+		return
 	}
 
 	//Get user balance

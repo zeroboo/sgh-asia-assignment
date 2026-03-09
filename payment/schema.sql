@@ -1,7 +1,7 @@
 CREATE TABLE transactions (
     transaction_id  VARCHAR(64)   NOT NULL,
     user_id         VARCHAR(64)   NOT NULL,
-    amount          DECIMAL(18,2) NOT NULL,
+    amount          BIGINT NOT NULL DEFAULT 0,
     type            ENUM('debit','credit') NOT NULL,
     status          ENUM('created','processing','completed','failed','refunded') NOT NULL DEFAULT 'created',
     description     TEXT,
@@ -40,5 +40,5 @@ CREATE TABLE transaction_locks (
     expires_at      DATETIME(3)   NOT NULL,
     deleted_at      DATETIME(3)   NULL,
 
-    PRIMARY KEY (transaction_id),
+    PRIMARY KEY (transaction_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
