@@ -1,9 +1,11 @@
 package handler
 
+import "fmt"
+
 // PayRequest pay request content.
 type PayRequest struct {
-	TransactionID string `json:"transactionID" binding:"required"`
-	UserID        string `json:"userID" binding:"required"`
+	TransactionID string `json:"transaction_id" binding:"required"`
+	UserID        string `json:"user_id" binding:"required"`
 	Amount        int64  `json:"amount" binding:"required"`
 	Currency      string `json:"currency,omitempty"`
 	Description   string `json:"description,omitempty"`
@@ -11,19 +13,20 @@ type PayRequest struct {
 
 // PayResponse response for payrequest
 type PayResponse struct {
-	Status        string `json:"status"`
-	TransactionID string `json:"transactionID"`
-	UserID        string `json:"userID"`
+	BaseResponse
+	TransactionID string `json:"transaction_id"`
+	UserID        string `json:"user_id"`
 	Amount        int64  `json:"amount"`
 	Currency      string `json:"currency"`
-	NewBalance    int64  `json:"newBalance"`
+	NewBalance    int64  `json:"new_balance"`
 	Message       string `json:"message,omitempty"`
-	ProcessedAt   string `json:"processedAt"`
+	ProcessedAt   string `json:"processed_at"`
 }
 
-// ErrorDTO is a standard error response.
-type ErrorDTO struct {
-	Error   string `json:"error"`
-	Code    string `json:"code,omitempty"`
-	Details string `json:"details,omitempty"`
+type BaseResponse struct {
+	Status       int
+	ErrorMessage string `json:"error_msg"`
+	ErrorCode    string `json:"error"`
 }
+
+var ErrInvalidRequest error = fmt.Errorf("Invalid request")

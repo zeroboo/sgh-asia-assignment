@@ -25,7 +25,7 @@ const (
 type Transaction struct {
 	ID             string            `json:"transaction_id" db:"transaction_id"`
 	UserID         string            `json:"user_id" db:"user_id"`
-	Amount         float64           `json:"amount" db:"amount"`
+	Amount         int64             `json:"amount" db:"amount"`
 	Type           TransactionType   `json:"type" db:"type"`
 	Status         TransactionStatus `json:"status" db:"status"`
 	Description    string            `json:"description,omitempty" db:"description"`

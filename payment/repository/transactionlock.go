@@ -19,10 +19,12 @@ func NewTransactionLockRepo(db *sql.DB) *TransactionLockRepo {
 	return &TransactionLockRepo{db: db}
 }
 
-// Create inserts a new lock row (acquires the lock).
-func (r *TransactionLockRepo) Create(ctx context.Context, transactionID string) error {
-	query := `INSERT INTO transaction_locks (transaction_id, created_at) VALUES (?, ?)`
-	_, err := r.db.ExecContext(ctx, query, transactionID, time.Now())
+// Create inserts a new lock row (acquires the lock) with an expiration duration.
+func (r *TransactionLockRepo) Create(ctx context.Context, transactionID string, expiration time.Duration) error {
+	now := time.Now()
+	expiresAt := now.Add(expiration)
+	query := `INSERT INTO transaction_locks (transaction_id, created_at, expires_at) VALUES (?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, transactionID, now, expiresAt)
 	if err != nil {
 		return fmt.Errorf("acquire lock for transaction %s: %w", transactionID, err)
 	}

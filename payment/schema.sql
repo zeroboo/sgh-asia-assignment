@@ -37,6 +37,7 @@ CREATE TABLE events (
 CREATE TABLE transaction_locks (
     transaction_id  VARCHAR(64)   NOT NULL,
     created_at      DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    expires_at      DATETIME(3)   NOT NULL,
     deleted_at      DATETIME(3)   NULL,
 
     PRIMARY KEY (transaction_id),

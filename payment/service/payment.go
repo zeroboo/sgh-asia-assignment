@@ -43,9 +43,9 @@ func (s *PaymentService) GetUserBalance(userID string) (*model.UserBalance, erro
 }
 
 // LockPayment creates an advisory lock row to prevent duplicate processing.
-func (s *PaymentService) LockPayment(transactionID string) error {
+func (s *PaymentService) LockPayment(transactionID string, expiration time.Duration) error {
 	ctx := context.Background()
-	return s.transactionLockRepo.Create(ctx, transactionID)
+	return s.transactionLockRepo.Create(ctx, transactionID, expiration)
 }
 
 // UnlockPayment releases the advisory lock for a transaction.
@@ -68,7 +68,7 @@ func (s *PaymentService) CreatePayment(userID string, transactionID string, amou
 	tx := &model.Transaction{
 		ID:             transactionID,
 		UserID:         userID,
-		Amount:         float64(amount),
+		Amount:         amount,
 		Type:           model.TypeDebit,
 		Status:         model.StatusCreated,
 		IdempotencyKey: transactionID,
