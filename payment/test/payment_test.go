@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"testing"
 
 	"zeroboo.payment/handler"
@@ -211,5 +212,139 @@ func TestAPI_MultiplePayments_CorrectBalance(t *testing.T) {
 	}
 	if balance != 400 {
 		t.Errorf("expected balance 400, got %d", balance)
+	}
+}
+
+// go test -timeout 30s -run ^TestAPI_ConcurrentSameTransaction_OnlyOneSucceeds$ zeroboo.payment/test -v
+func TestAPI_ConcurrentSameTransaction_OnlyOneSucceeds(t *testing.T) {
+	cleanTables(t)
+	seedUserBalance(t, "user-concurrent", 1000)
+
+	const concurrency = 10
+	req := handler.PayRequest{
+		TransactionID: "tx-concurrent-1",
+		UserID:        "user-concurrent",
+		Amount:        200,
+	}
+
+	// Fire N goroutines hitting /pay with the same transaction_id simultaneously.
+	var wg sync.WaitGroup
+	type result struct {
+		statusCode int
+		body       handler.PayResponse
+	}
+	results := make([]result, concurrency)
+
+	// Use a channel as a barrier so all goroutines start at roughly the same time.
+	start := make(chan struct{})
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			<-start // wait for the barrier
+			resp := postPay(t, req)
+			var body handler.PayResponse
+			decodeBody(t, resp, &body)
+			results[idx] = result{statusCode: resp.StatusCode, body: body}
+		}(i)
+	}
+	close(start) // release all goroutines
+	wg.Wait()
+
+	// Count how many got a successful (Status 200) response.
+	successCount := 0
+	for _, r := range results {
+		if r.body.Status == http.StatusOK {
+			successCount++
+		}
+	}
+	if successCount == 0 {
+		t.Fatal("expected at least 1 successful response, got 0")
+	}
+	t.Logf("%d/%d requests returned success", successCount, concurrency)
+
+	// Verify balance was deducted exactly once: 1000 - 200 = 800.
+	var balance int64
+	err := suiteDB.QueryRow("SELECT balance FROM user_balances WHERE user_id = ?", "user-concurrent").Scan(&balance)
+	if err != nil {
+		t.Fatalf("query balance: %v", err)
+	}
+	if balance != 800 {
+		t.Errorf("expected balance 800 (deducted once), got %d", balance)
+	}
+
+	// Verify there is exactly 1 transaction row.
+	var txCount int
+	err = suiteDB.QueryRow("SELECT COUNT(*) FROM transactions WHERE transaction_id = ?", "tx-concurrent-1").Scan(&txCount)
+	if err != nil {
+		t.Fatalf("query transaction count: %v", err)
+	}
+	if txCount != 1 {
+		t.Errorf("expected exactly 1 transaction row, got %d", txCount)
+	}
+
+	// Verify that transaction is completed.
+	var status string
+	err = suiteDB.QueryRow("SELECT status FROM transactions WHERE transaction_id = ?", "tx-concurrent-1").Scan(&status)
+	if err != nil {
+		t.Fatalf("query transaction status: %v", err)
+	}
+	if status != "completed" {
+		t.Errorf("expected transaction status 'completed', got '%s'", status)
+	}
+}
+
+// go test -timeout 30s -run ^TestAPI_SequentialSameTransaction_OnlyOneDeducted$ zeroboo.payment/test -v
+func TestAPI_SequentialSameTransaction_OnlyOneDeducted(t *testing.T) {
+	cleanTables(t)
+	seedUserBalance(t, "user-seq", 1000)
+
+	req := handler.PayRequest{
+		TransactionID: "tx-seq-1",
+		UserID:        "user-seq",
+		Amount:        250,
+	}
+
+	// Send 3 sequential requests with the same transaction_id.
+	for i := 1; i <= 3; i++ {
+		resp := postPay(t, req)
+		var body handler.PayResponse
+		decodeBody(t, resp, &body)
+
+		if body.Status != http.StatusOK {
+			t.Fatalf("request %d: expected status %d, got %d (error: %s)",
+				i, http.StatusOK, body.Status, body.ErrorMessage)
+		}
+		t.Logf("request %d: status=%d", i, body.Status)
+	}
+
+	// Verify balance was deducted exactly once: 1000 - 250 = 750.
+	var balance int64
+	err := suiteDB.QueryRow("SELECT balance FROM user_balances WHERE user_id = ?", "user-seq").Scan(&balance)
+	if err != nil {
+		t.Fatalf("query balance: %v", err)
+	}
+	if balance != 750 {
+		t.Errorf("expected balance 750 (deducted once), got %d", balance)
+	}
+
+	// Verify exactly 1 transaction row exists.
+	var txCount int
+	err = suiteDB.QueryRow("SELECT COUNT(*) FROM transactions WHERE transaction_id = ?", "tx-seq-1").Scan(&txCount)
+	if err != nil {
+		t.Fatalf("query transaction count: %v", err)
+	}
+	if txCount != 1 {
+		t.Errorf("expected exactly 1 transaction row, got %d", txCount)
+	}
+
+	// Verify that transaction status is completed.
+	var status string
+	err = suiteDB.QueryRow("SELECT status FROM transactions WHERE transaction_id = ?", "tx-seq-1").Scan(&status)
+	if err != nil {
+		t.Fatalf("query transaction status: %v", err)
+	}
+	if status != "completed" {
+		t.Errorf("expected transaction status 'completed', got '%s'", status)
 	}
 }

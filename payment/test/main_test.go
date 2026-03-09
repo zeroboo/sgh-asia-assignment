@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -63,6 +64,8 @@ func TestMain(m *testing.M) {
 	suiteSrv.CloseClientConnections()
 	suiteSrv.Close()
 	suiteDB.Close()
+	// Give the OS a moment to release file handles (Windows file-lock workaround).
+	time.Sleep(1000 * time.Millisecond)
 	log.Println("integration test suite: teardown complete")
 
 	os.Exit(code)
