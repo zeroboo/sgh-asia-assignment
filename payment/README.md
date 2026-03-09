@@ -39,7 +39,11 @@ payment/
 ├── model/                  # Domain structs shared across layers
 ├── middleware/             # HTTP middleware (auth, rate-limiting, etc.)
 ├── transfer/               # Transfer-related logic
-└── test/                   # Integration tests (real HTTP + real MySQL)
+├── test/                   # Integration tests (real HTTP + real MySQL)
+└── deployments/            # Docker / docker-compose files for test environment
+    ├── docker-compose.yml  #   Spins up MySQL 8.0 for integration tests
+    └── mysql-init/
+        └── 01-init.sql     #   Creates payment_test DB & tables on first start
 ```
 
 
@@ -52,16 +56,26 @@ Under `payment` folder:
 ## Test
 Tests of project placed under folder `payment/test`
 
-1, Prepare database
-```sql 
-CREATE DATABASE IF NOT EXISTS payment_test;
-USE payment_test;
-SOURCE schema.sql;
+### 1. Start test database
+```shell
+cd payment/deployments
+docker compose up -d
 ```
-2, Run tests
+This starts a MySQL 8.0 container on port **3306** with root password `root`.
+The init script automatically creates the `payment_test` database and all tables.
+
+### 2. Run tests
 ```shell
 cd payment
 go test ./test/ -v -count=1
+```
+The test suite connects to `root:root@tcp(127.0.0.1:3306)/payment_test` by default.
+Override with the `MYSQL_TEST_DSN` environment variable if needed.
+
+### 3. Tear down
+```shell
+cd payment/deployments
+docker compose down -v
 ```
 
 

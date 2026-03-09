@@ -1,0 +1,48 @@
+name: Payment Tests
+
+on:
+  push:
+    paths:
+      - "payment/**"
+  pull_request:
+    paths:
+      - "payment/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start MySQL via Docker Compose
+        working-directory: payment/deployments
+        run: |
+          docker compose up -d
+          # Wait until MySQL is healthy
+          echo "Waiting for MySQL to be ready..."
+          for i in $(seq 1 30); do
+            if docker compose exec -T mysql-test mysqladmin ping -h 127.0.0.1 -uroot -proot --silent 2>/dev/null; then
+              echo "MySQL is ready"
+              break
+            fi
+            echo "  attempt $i/30..."
+            sleep 2
+          done
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: payment/go.mod
+
+      - name: Run tests
+        working-directory: payment
+        env:
+          MYSQL_TEST_DSN: "root:root@tcp(127.0.0.1:3306)/payment_test?parseTime=true"
+        run: go test ./test/ -v -count=1
+
+      - name: Tear down Docker Compose
+        if: always()
+        working-directory: payment/deployments
+        run: docker compose down -v
