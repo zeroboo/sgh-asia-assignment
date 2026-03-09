@@ -46,17 +46,11 @@ payment/
         └── 01-init.sql     #   Creates payment_test DB & tables on first start
 ```
 
-
-## Build
-Under `payment` folder:
-```shell
-
-```
-
-## Test
+## Development
+### 1. Test
 Tests of project placed under folder `payment/test`
 
-### 1. Start test database
+#### 1.1 Start test database
 ```shell
 cd payment/deployments
 docker compose up -d
@@ -64,7 +58,7 @@ docker compose up -d
 This starts a MySQL 8.0 container on port **3306** with root password `root`.
 The init script automatically creates the `payment_test` database and all tables.
 
-### 2. Run tests
+#### 1.2 Run tests
 ```shell
 cd payment
 go test ./test/ -v -count=1
@@ -72,10 +66,24 @@ go test ./test/ -v -count=1
 The test suite connects to `root:root@tcp(127.0.0.1:3306)/payment_test` by default.
 Override with the `MYSQL_TEST_DSN` environment variable if needed.
 
-### 3. Tear down
+#### 1.3 Tear down
 ```shell
 cd payment/deployments
 docker compose down -v
+```
+
+### 2. CI Setup
+Project has a CI workflow setup with Github Action, the workflow named `Payment Tests` 
+- This workflow will triggered after a push/PR.
+- The workflow perform integration test every run
+- [Workflow configuration](./../.github/workflows/payment-tests.yml)
+
+
+### 3. Deployment
+Service can be run as docker container
+```shell
+cd payment/deployments
+docker compose -f docker-compose.deploy.yml up --build -d
 ```
 
 

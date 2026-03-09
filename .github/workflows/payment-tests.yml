@@ -11,6 +11,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
 
     steps:
       - name: Checkout code
@@ -36,11 +38,26 @@ jobs:
         with:
           go-version-file: payment/go.mod
 
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+
       - name: Run tests
         working-directory: payment
         env:
           MYSQL_TEST_DSN: "root:root@tcp(127.0.0.1:3306)/payment_test?parseTime=true"
-        run: go test ./test/ -v -count=1
+        run: |
+          gotestsum \
+            --junitfile test-results.xml \
+            --format testdox \
+            -- ./test/ -count=1
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Payment Test Results
+          path: payment/test-results.xml
+          reporter: java-junit
 
       - name: Tear down Docker Compose
         if: always()
