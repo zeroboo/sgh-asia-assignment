@@ -41,5 +41,4 @@ CREATE TABLE transaction_locks (
     deleted_at      DATETIME(3)   NULL,
 
     PRIMARY KEY (transaction_id),
-    CONSTRAINT fk_lock_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
